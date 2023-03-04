@@ -490,8 +490,8 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
     toggleExtension(configuration.disableExtension, compositionState);
   });
 
-  registerCommand(context, 'toggleCodenav', async () => {
-    configuration.enableCodenav = !configuration.enableCodenav;
+  registerCommand(context, 'enableCodenav', async () => {
+    configuration.enableCodenav = true;
     configuration.disableExtension = true;
     toggleExtension(configuration.disableExtension, compositionState);
   });
