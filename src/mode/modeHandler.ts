@@ -1461,6 +1461,15 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         cursorStyle = configuration.editorCursorStyle;
       }
     }
+
+    if (
+      cursorStyle === vscode.TextEditorCursorStyle.Line &&
+      this.vimState.modeData.mode === Mode.Disabled &&
+      configuration.enableCodenav
+    ) {
+      cursorStyle = vscode.TextEditorCursorStyle.Block;
+    }
+
     this.vimState.editor.options.cursorStyle = cursorStyle;
 
     // cursor block

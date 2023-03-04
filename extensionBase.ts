@@ -18,6 +18,7 @@ import { Register } from './src/register/register';
 import { SpecialKeys } from './src/util/specialKeys';
 import { HistoryTracker } from './src/history/historyTracker';
 import { exCommandParser } from './src/vimscript/exCommandParser';
+import { codenavType } from './src/codenav';
 
 let extensionContext: vscode.ExtensionContext;
 let previousActiveEditorUri: vscode.Uri | undefined;
@@ -352,6 +353,11 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
   // Override VSCode commands
   overrideCommand(context, 'type', async (args) => {
     taskQueue.enqueueTask(async () => {
+      if (configuration.disableExtension && configuration.enableCodenav) {
+        codenavType(args);
+        return;
+      }
+
       const mh = await getAndUpdateModeHandler();
       if (mh) {
         if (compositionState.isInComposition) {
@@ -369,6 +375,10 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
 
   overrideCommand(context, 'replacePreviousChar', async (args) => {
     taskQueue.enqueueTask(async () => {
+      if (configuration.disableExtension && configuration.enableCodenav) {
+        return;
+      }
+
       const mh = await getAndUpdateModeHandler();
       if (mh) {
         if (compositionState.isInComposition) {
@@ -480,6 +490,12 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
     toggleExtension(configuration.disableExtension, compositionState);
   });
 
+  registerCommand(context, 'toggleCodenav', async () => {
+    configuration.enableCodenav = !configuration.enableCodenav;
+    configuration.disableExtension = true;
+    toggleExtension(configuration.disableExtension, compositionState);
+  });
+
   for (const boundKey of configuration.boundKeyCombinations) {
     const command = ['<Esc>', '<C-c>'].includes(boundKey.key)
       ? async () => {
@@ -559,7 +575,7 @@ function overrideCommand(
   callback: (...args: any[]) => any
 ) {
   const disposable = vscode.commands.registerCommand(command, async (args) => {
-    if (configuration.disableExtension) {
+    if (configuration.disableExtension && !configuration.enableCodenav) {
       return vscode.commands.executeCommand('default:' + command, args);
     }
 

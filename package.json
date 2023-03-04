@@ -54,6 +54,10 @@
         "title": "Vim: Toggle Vim Mode"
       },
       {
+        "command": "toggleCodenav",
+        "title": "Vim: Toggle Codenav"
+      },
+      {
         "command": "vim.showQuickpickCmdLine",
         "title": "Vim: Show Command Line"
       },

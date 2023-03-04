@@ -188,6 +188,9 @@ export function statusBarText(vimState: VimState) {
     case Mode.SurroundInputMode:
       return '-- SURROUND INPUT --';
     case Mode.Disabled:
+      if (configuration.enableCodenav) {
+        return '-- VIM: DISABLED CODENAV --';
+      }
       return '-- VIM: DISABLED --';
     case Mode.SearchInProgressMode:
       return vimState.modeData.commandLine.display(cursorChar);

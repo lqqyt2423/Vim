@@ -403,6 +403,8 @@ class Configuration implements IConfiguration {
 
   disableExtension: boolean = false;
 
+  enableCodenav: boolean = false;
+
   enableNeovim = false;
   neovimPath = '';
   neovimUseConfigFile = false;
