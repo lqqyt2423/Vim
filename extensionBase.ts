@@ -486,6 +486,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
   });
 
   registerCommand(context, 'toggleVim', async () => {
+    configuration.enableCodenav = false;
     configuration.disableExtension = !configuration.disableExtension;
     toggleExtension(configuration.disableExtension, compositionState);
   });
