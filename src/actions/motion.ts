@@ -5,7 +5,7 @@ import { CursorMoveByUnit, CursorMovePosition, TextEditor } from './../textEdito
 import { isVisualMode, Mode } from './../mode/mode';
 import { PairMatcher } from './../common/matching/matcher';
 import { QuoteMatcher } from './../common/matching/quoteMatcher';
-import { RegisterAction } from './base';
+import { getRelevantAction, RegisterAction } from './base';
 import { RegisterMode } from './../register/register';
 import { TagMatcher } from './../common/matching/tagMatcher';
 import { VimState } from './../state/vimState';
@@ -302,6 +302,10 @@ class MoveDown extends BaseMovement {
       return new MoveDownFoldFix().execAction(position, vimState);
     }
 
+    if (vimState.recordedState.count >= 2) {
+      vimState.moveMulitLinesCode = ['j', vimState.recordedState.count];
+    }
+
     if (position.line < vimState.document.lineCount - 1) {
       return position.with({ character: vimState.desiredColumn }).getDown();
     } else {
@@ -338,6 +342,10 @@ class MoveUp extends BaseMovement {
 
     if (configuration.foldfix && vimState.currentMode !== Mode.VisualBlock) {
       return new MoveUpFoldFix().execAction(position, vimState);
+    }
+
+    if (vimState.recordedState.count >= 2) {
+      vimState.moveMulitLinesCode = ['k', vimState.recordedState.count];
     }
 
     if (position.line > 0) {
@@ -1005,19 +1013,37 @@ class MoveRepeatReversed extends BaseMovement {
     vimState: VimState,
     count: number,
   ): Promise<Position | IMovement> {
+    const moveMulitLines = async () => {
+      const [moveActionCode, moveCount] = vimState.moveMulitLinesCode;
+      const moveAction = getRelevantAction([moveActionCode], vimState) as BaseMovement;
+      const moveResult = await moveAction.execActionWithCount(position, vimState, moveCount);
+      return moveResult;
+    };
+
     const semiColonMovement = vimState.lastSemicolonRepeatableMovement;
     const commaMovement = vimState.lastCommaRepeatableMovement;
     if (commaMovement) {
-      const result = commaMovement.execActionWithCount(position, vimState, count);
+      const result = await commaMovement.execActionWithCount(position, vimState, count);
 
       // Make sure these don't change. Otherwise, comma's direction flips back
       // and forth when done repeatedly. This is a bit hacky, so feel free to refactor.
       vimState.lastSemicolonRepeatableMovement = semiColonMovement;
       vimState.lastCommaRepeatableMovement = commaMovement;
 
+      // if equal
+      // eslint-disable-next-line
+      // @ts-ignore
+      // eslint-disable-next-line
+      const resultE = result.start ? result.start.e : result.e;
+      // eslint-disable-next-line
+      // @ts-ignore
+      if (resultE === position.e) {
+        return moveMulitLines();
+      }
+
       return result;
     }
-    return position;
+    return moveMulitLines();
   }
 }
 

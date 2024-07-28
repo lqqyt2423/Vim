@@ -310,6 +310,8 @@ export class VimState implements vscode.Disposable {
 
   public nvim?: INVim;
 
+  public moveMulitLinesCode: ['j' | 'k', number] = ['j', 2];
+
   public constructor(editor: vscode.TextEditor, easyMotion: IEasyMotion) {
     this.editor = editor;
     this.documentUri = editor?.document.uri ?? vscode.Uri.file(''); // TODO: this is needed for some badly written tests
