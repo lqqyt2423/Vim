@@ -1,3 +1,11 @@
+Support mulit lines move with `,`.
+
+`5j` -> `,`
+
+`5k` -> `,`
+
+<hr />
+
 <h2 align="center"><img src="https://raw.githubusercontent.com/VSCodeVim/Vim/master/images/icon.png" height="128"><br>VSCodeVim</h2>
 <p align="center"><strong>Vim emulation for Visual Studio Code</strong></p>
 
