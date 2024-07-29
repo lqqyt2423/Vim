@@ -504,6 +504,8 @@ class Configuration implements IConfiguration {
     }
     return result;
   }
+
+  moveMulitLines = 5;
 }
 
 // handle mapped settings between vscode to vim

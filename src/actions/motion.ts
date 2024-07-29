@@ -303,7 +303,7 @@ class MoveDown extends BaseMovement {
     }
 
     if (vimState.recordedState.count >= 2) {
-      vimState.moveMulitLinesCode = ['j', vimState.recordedState.count];
+      vimState.moveMulitLines = vimState.recordedState.count;
     }
 
     if (position.line < vimState.document.lineCount - 1) {
@@ -345,7 +345,7 @@ class MoveUp extends BaseMovement {
     }
 
     if (vimState.recordedState.count >= 2) {
-      vimState.moveMulitLinesCode = ['k', vimState.recordedState.count];
+      vimState.moveMulitLines = vimState.recordedState.count;
     }
 
     if (position.line > 0) {
@@ -996,11 +996,34 @@ class MoveRepeat extends BaseMovement {
     vimState: VimState,
     count: number,
   ): Promise<Position | IMovement> {
+    const moveMulitLines = async () => {
+      const moveAction = getRelevantAction(['j'], vimState) as BaseMovement;
+      const moveResult = await moveAction.execActionWithCount(
+        position,
+        vimState,
+        vimState.moveMulitLines,
+      );
+      return moveResult;
+    };
+
     const movement = vimState.lastSemicolonRepeatableMovement;
     if (movement) {
-      return movement.execActionWithCount(position, vimState, count);
+      const result = await movement.execActionWithCount(position, vimState, count);
+
+      // if equal
+      // eslint-disable-next-line
+      // @ts-ignore
+      // eslint-disable-next-line
+      const resultE = result.start ? result.start.e : result.e;
+      // eslint-disable-next-line
+      // @ts-ignore
+      if (resultE === position.e) {
+        return moveMulitLines();
+      }
+
+      return result;
     }
-    return position;
+    return moveMulitLines();
   }
 }
 
@@ -1014,9 +1037,12 @@ class MoveRepeatReversed extends BaseMovement {
     count: number,
   ): Promise<Position | IMovement> {
     const moveMulitLines = async () => {
-      const [moveActionCode, moveCount] = vimState.moveMulitLinesCode;
-      const moveAction = getRelevantAction([moveActionCode], vimState) as BaseMovement;
-      const moveResult = await moveAction.execActionWithCount(position, vimState, moveCount);
+      const moveAction = getRelevantAction(['k'], vimState) as BaseMovement;
+      const moveResult = await moveAction.execActionWithCount(
+        position,
+        vimState,
+        vimState.moveMulitLines,
+      );
       return moveResult;
     };
 

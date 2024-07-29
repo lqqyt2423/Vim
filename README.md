@@ -1,8 +1,10 @@
-Support mulit lines move with `,`.
+Support mulit lines move.
 
-`5j` -> `,`
+config is `vim.moveMulitLines`, default 5.
 
-`5k` -> `,`
+`;` -> `5j`
+
+`,` -> `5k`
 
 <hr />
 
