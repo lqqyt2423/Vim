@@ -5,7 +5,7 @@ import { CursorMoveByUnit, CursorMovePosition, TextEditor } from './../textEdito
 import { isVisualMode, Mode } from './../mode/mode';
 import { PairMatcher } from './../common/matching/matcher';
 import { QuoteMatcher } from './../common/matching/quoteMatcher';
-import { getRelevantAction, RegisterAction } from './base';
+import { BaseCommand, getRelevantAction, RegisterAction } from './base';
 import { RegisterMode } from './../register/register';
 import { TagMatcher } from './../common/matching/tagMatcher';
 import { VimState } from './../state/vimState';
@@ -302,10 +302,6 @@ class MoveDown extends BaseMovement {
       return new MoveDownFoldFix().execAction(position, vimState);
     }
 
-    if (vimState.recordedState.count >= 2) {
-      vimState.moveMulitLines = vimState.recordedState.count;
-    }
-
     if (position.line < vimState.document.lineCount - 1) {
       return position.with({ character: vimState.desiredColumn }).getDown();
     } else {
@@ -342,10 +338,6 @@ class MoveUp extends BaseMovement {
 
     if (configuration.foldfix && vimState.currentMode !== Mode.VisualBlock) {
       return new MoveUpFoldFix().execAction(position, vimState);
-    }
-
-    if (vimState.recordedState.count >= 2) {
-      vimState.moveMulitLines = vimState.recordedState.count;
     }
 
     if (position.line > 0) {
@@ -997,11 +989,17 @@ class MoveRepeat extends BaseMovement {
     count: number,
   ): Promise<Position | IMovement> {
     const moveMulitLines = async () => {
+      if (configuration.moveMulitLinesMode === 'screen') {
+        const scrollAction = getRelevantAction(['<C-e>'], vimState) as BaseCommand;
+        vimState.recordedState.count = configuration.moveMulitLines;
+        await scrollAction.execCount(vimState.cursorStopPosition, vimState);
+        return vimState.cursorStopPosition;
+      }
       const moveAction = getRelevantAction(['j'], vimState) as BaseMovement;
       const moveResult = await moveAction.execActionWithCount(
         position,
         vimState,
-        vimState.moveMulitLines,
+        configuration.moveMulitLines,
       );
       return moveResult;
     };
@@ -1037,11 +1035,17 @@ class MoveRepeatReversed extends BaseMovement {
     count: number,
   ): Promise<Position | IMovement> {
     const moveMulitLines = async () => {
+      if (configuration.moveMulitLinesMode === 'screen') {
+        const scrollAction = getRelevantAction(['<C-y>'], vimState) as BaseCommand;
+        vimState.recordedState.count = configuration.moveMulitLines;
+        await scrollAction.execCount(vimState.cursorStopPosition, vimState);
+        return vimState.cursorStopPosition;
+      }
       const moveAction = getRelevantAction(['k'], vimState) as BaseMovement;
       const moveResult = await moveAction.execActionWithCount(
         position,
         vimState,
-        vimState.moveMulitLines,
+        configuration.moveMulitLines,
       );
       return moveResult;
     };
