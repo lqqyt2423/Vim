@@ -3,7 +3,7 @@
   "displayName": "Vim with codenav",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "1.27.5",
+  "version": "1.27.6",
   "publisher": "liqiqiang",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -1161,7 +1161,6 @@
           "type": "string",
           "description": "Move Mulit lines mode",
           "enum": [
-            "",
             "line",
             "screen"
           ]

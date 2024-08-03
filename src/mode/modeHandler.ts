@@ -643,7 +643,27 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     recordedState.actionKeys.push(key);
     void VSCodeContext.set('vim.command', recordedState.commandString);
 
-    const action = getRelevantAction(recordedState.actionKeys, this.vimState);
+    let action: BaseAction | KeypressState;
+    if (
+      this.vimState.currentMode === Mode.Normal &&
+      this.vimState.lastKeys.length === 1 &&
+      this.vimState.lastKeys[0] === 'L' &&
+      recordedState.actionKeys.length === 1 &&
+      recordedState.actionKeys[0] === 'L'
+    ) {
+      action = getRelevantAction(['<C-d>'], this.vimState);
+    } else if (
+      this.vimState.currentMode === Mode.Normal &&
+      this.vimState.lastKeys.length === 1 &&
+      this.vimState.lastKeys[0] === 'H' &&
+      recordedState.actionKeys.length === 1 &&
+      recordedState.actionKeys[0] === 'H'
+    ) {
+      action = getRelevantAction(['<C-u>'], this.vimState);
+    } else {
+      action = getRelevantAction(recordedState.actionKeys, this.vimState);
+    }
+
     switch (action) {
       case KeypressState.NoPossibleMatch:
         if (this.vimState.currentMode === Mode.Insert) {
@@ -732,7 +752,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       this.vimState.macro.actionsRun.push(actionToRecord);
     }
 
+    const lastKeys = recordedState.actionKeys;
     await this.runAction(recordedState, action);
+    this.vimState.lastKeys = lastKeys;
 
     if (this.vimState.currentMode === Mode.Insert) {
       recordedState.isInsertion = true;
