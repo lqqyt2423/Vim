@@ -5,7 +5,7 @@ import { CursorMoveByUnit, CursorMovePosition, TextEditor } from './../textEdito
 import { isVisualMode, Mode } from './../mode/mode';
 import { PairMatcher } from './../common/matching/matcher';
 import { QuoteMatcher } from './../common/matching/quoteMatcher';
-import { RegisterAction } from './base';
+import { BaseCommand, getRelevantAction, RegisterAction } from './base';
 import { RegisterMode } from './../register/register';
 import { TagMatcher } from './../common/matching/tagMatcher';
 import { VimState } from './../state/vimState';
@@ -1308,6 +1308,18 @@ class MoveToLineFromViewPortTop extends BaseMovement {
       .get<number>('cursorSurroundingLines', 0);
     const line = topLine + scrolloff;
 
+    if (
+      vimState.cursorStopPosition.line ===
+      position.with({ line }).obeyStartOfLine(vimState.document).line
+    ) {
+      const scrollAction: BaseCommand = getRelevantAction(['<C-u>'], vimState) as BaseCommand;
+      await scrollAction.execCount(vimState.cursorStopPosition, vimState);
+      return {
+        start: vimState.cursorStartPosition,
+        stop: vimState.cursorStopPosition,
+      };
+    }
+
     return {
       start: vimState.cursorStartPosition,
       stop: position.with({ line }).obeyStartOfLine(vimState.document),
@@ -1341,6 +1353,18 @@ class MoveToLineFromViewPortBottom extends BaseMovement {
       .getConfiguration('editor')
       .get<number>('cursorSurroundingLines', 0);
     const line = bottomLine - scrolloff;
+
+    if (
+      vimState.cursorStopPosition.line ===
+      position.with({ line }).obeyStartOfLine(vimState.document).line
+    ) {
+      const scrollAction: BaseCommand = getRelevantAction(['<C-d>'], vimState) as BaseCommand;
+      await scrollAction.execCount(vimState.cursorStopPosition, vimState);
+      return {
+        start: vimState.cursorStartPosition,
+        stop: vimState.cursorStopPosition,
+      };
+    }
 
     return {
       start: vimState.cursorStartPosition,
